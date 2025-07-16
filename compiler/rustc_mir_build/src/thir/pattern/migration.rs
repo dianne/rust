@@ -65,7 +65,8 @@ impl<'a> PatMigration<'a> {
                 // provide the same reference link as the lint
                 err.note(format!("for more information, see {}", info.reference));
             }
-            err.arg("bad_modifiers", self.info.bad_modifiers);
+            err.arg("bad_mut_modifiers", self.info.bad_mut_modifiers);
+            err.arg("bad_ref_modifiers", self.info.bad_ref_modifiers);
             err.arg("bad_ref_pats", self.info.bad_ref_pats);
             err.arg("is_hard_error", true);
             err.subdiagnostic(sugg);
@@ -77,7 +78,8 @@ impl<'a> PatMigration<'a> {
                 spans,
                 Rust2024IncompatiblePat {
                     sugg,
-                    bad_modifiers: self.info.bad_modifiers,
+                    bad_mut_modifiers: self.info.bad_mut_modifiers,
+                    bad_ref_modifiers: self.info.bad_ref_modifiers,
                     bad_ref_pats: self.info.bad_ref_pats,
                     is_hard_error,
                 },

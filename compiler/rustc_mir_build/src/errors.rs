@@ -1101,7 +1101,8 @@ pub(crate) enum MiscPatternSuggestion {
 pub(crate) struct Rust2024IncompatiblePat {
     #[subdiagnostic]
     pub(crate) sugg: Rust2024IncompatiblePatSugg,
-    pub(crate) bad_modifiers: bool,
+    pub(crate) bad_mut_modifiers: bool,
+    pub(crate) bad_ref_modifiers: bool,
     pub(crate) bad_ref_pats: bool,
     pub(crate) is_hard_error: bool,
 }
@@ -1124,9 +1125,11 @@ impl Subdiagnostic for Rust2024IncompatiblePatSugg {
         for (span, def_br_mutbl) in self.default_mode_labels.into_iter().rev() {
             // Don't point to a macro call site.
             if !span.from_expansion() {
-                let note_msg = "matching on a reference type with a non-reference pattern changes the default binding mode";
-                let label_msg =
-                    format!("this matches on type `{}_`", def_br_mutbl.ref_prefix_str());
+                let note_msg = "matching on a reference type with a non-reference pattern implicitly borrows the contents";
+                let label_msg = format!(
+                    "this non-reference pattern matches on a reference type `{}_`",
+                    def_br_mutbl.ref_prefix_str()
+                );
                 let mut label = MultiSpan::from(span);
                 label.push_span_label(span, label_msg);
                 diag.span_note(label, note_msg);
@@ -1140,17 +1143,21 @@ impl Subdiagnostic for Rust2024IncompatiblePatSugg {
             } else {
                 Applicability::MaybeIncorrect
             };
+        let plural_modes = pluralize!(self.binding_mode_count);
         let msg = if self.suggest_eliding_modes {
-            let plural_modes = pluralize!(self.binding_mode_count);
             format!("remove the unnecessary binding modifier{plural_modes}")
         } else {
-            let plural_derefs = pluralize!(self.ref_pattern_count);
-            let and_modes = if self.binding_mode_count > 0 {
-                format!(" and variable binding mode{}", pluralize!(self.binding_mode_count))
+            let and_add_modes = if self.binding_mode_count > 0 {
+                let a = if self.binding_mode_count == 1 { "a " } else { "" };
+                format!(" and borrow explicitly using {a}variable binding mode{plural_modes}",)
             } else {
                 String::new()
             };
-            format!("make the implied reference pattern{plural_derefs}{and_modes} explicit")
+            if self.ref_pattern_count == 1 {
+                format!("match on the reference with a reference pattern{and_add_modes}")
+            } else {
+                format!("match on references with reference patterns{and_add_modes}")
+            }
         };
         // FIXME(dianne): for peace of mind, don't risk emitting a 0-part suggestion (that panics!)
         if !self.suggestion.is_empty() {
