@@ -40,11 +40,6 @@ LL |     macros::with_wrong_type_due_to_generic_arg!();
    |     expected `u8`, found `()`
    |     arguments to this function are incorrect
    |
-help: the return type of this call is `()` due to the type of the argument passed
-  --> $DIR/wrong-call-return-type-due-to-generic-arg.rs:22:5
-   |
-LL |     macros::with_wrong_type_due_to_generic_arg!();
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this argument influences the return type of `identity`
 note: function defined here
   --> $SRC_DIR/core/src/convert/mod.rs:LL:COL
    = note: this error originates in the macro `macros::with_wrong_type_due_to_generic_arg` (in Nightly builds, run with -Z macro-backtrace for more info)

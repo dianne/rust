@@ -1200,7 +1200,9 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
         let hir::Node::Expr(parent_expr) = self.tcx.parent_hir_node(expr.hir_id) else {
             return;
         };
-        if parent_expr.span.desugaring_kind().is_some() {
+        if parent_expr.span.desugaring_kind().is_some()
+            || parent_expr.span.in_external_macro(self.tcx.sess.source_map())
+        {
             return;
         }
         enum CallableKind {
