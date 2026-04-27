@@ -1,3 +1,5 @@
+//@ aux-crate:macros=wrong-call-return-type-due-to-generic-arg-macros.rs
+
 fn function<T>(x: T, y: bool) -> T {
     x
 }
@@ -17,6 +19,7 @@ fn main() {
     // Should not trigger.
     let x = wrong_arg_type(0u16); //~ ERROR mismatched types
     let x: u16 = function(0, 0u8); //~ ERROR mismatched types
+    macros::with_wrong_type_due_to_generic_arg!(); //~ ERROR mismatched types
 
     // Should trigger exactly once for the first argument.
     let x: u16 = function(0u32, 0u8); //~ ERROR arguments to this function are incorrect
